@@ -1,0 +1,149 @@
+{
+  "project": {
+    "name": "ZERO",
+    "type": "Digital Menu App",
+    "architecture": "Mobile-First",
+    "theme": "Dynamic Multi-Location",
+    "archetype": "Organic & Earthy"
+  },
+  "typography": {
+    "primary_font": "Cormorant Garamond",
+    "fallback_primary": "serif",
+    "secondary_font": "Manrope",
+    "fallback_secondary": "sans-serif",
+    "scales": {
+      "h1": "text-4xl sm:text-5xl tracking-tight leading-none font-medium",
+      "h2": "text-2xl sm:text-3xl tracking-tight leading-snug font-medium",
+      "h3": "text-xl sm:text-2xl tracking-tight leading-snug",
+      "h4": "text-lg sm:text-xl font-medium",
+      "body_large": "text-base sm:text-lg leading-relaxed",
+      "body": "text-sm sm:text-base leading-relaxed",
+      "small": "text-xs uppercase tracking-[0.1em] font-bold"
+    }
+  },
+  "colors": {
+    "global": {
+      "background": "#FDFBF7",
+      "surface": "#FFFFFF",
+      "text_primary": "#1A1A1A",
+      "text_secondary": "#5C5C5C",
+      "border": "#E5E5E5",
+      "danger": "#D32F2F",
+      "success": "#388E3C"
+    },
+    "themes": {
+      "terasa": {
+        "primary": "#005B60",
+        "primary_foreground": "#FFFFFF",
+        "secondary": "#E0F2F1",
+        "secondary_foreground": "#004D40",
+        "accent": "#00838F",
+        "surface_tint": "#F5FAFA"
+      },
+      "restaurant": {
+        "primary": "#4E342E",
+        "primary_foreground": "#FFFFFF",
+        "secondary": "#EFEBE9",
+        "secondary_foreground": "#3E2723",
+        "accent": "#6D4C41",
+        "surface_tint": "#FBF9F8"
+      },
+      "discoteca": {
+        "primary": "#6A1B9A",
+        "primary_foreground": "#FFFFFF",
+        "secondary": "#F3E5F5",
+        "secondary_foreground": "#4A148C",
+        "accent": "#8E24AA",
+        "surface_tint": "#FCF0FF"
+      }
+    }
+  },
+  "layout_spacing": {
+    "container": "w-full max-w-md mx-auto px-4 md:max-w-4xl md:px-8",
+    "section_gap": "py-12 md:py-16",
+    "element_gap": "gap-4 sm:gap-6",
+    "border_radius": {
+      "card": "rounded-2xl",
+      "pill": "rounded-full",
+      "button": "rounded-xl",
+      "image": "rounded-2xl"
+    }
+  },
+  "ui_components": {
+    "pill_filters": {
+      "style": "single-line horizontal scroll flex gap-2 hide-scrollbar sticky top-0 z-40 bg-[#FDFBF7]/90 backdrop-blur-md py-3",
+      "item_active_terasa": "whitespace-nowrap bg-[#005B60] text-white rounded-full px-5 py-2 text-sm font-secondary font-semibold transition-all shadow-sm",
+      "item_inactive_terasa": "whitespace-nowrap bg-[#E0F2F1] text-[#004D40] rounded-full px-5 py-2 text-sm font-secondary font-medium transition-all hover:bg-[#00838F]/20",
+      "item_active_restaurant": "whitespace-nowrap bg-[#4E342E] text-white rounded-full px-5 py-2 text-sm font-secondary font-semibold transition-all shadow-sm",
+      "item_inactive_restaurant": "whitespace-nowrap bg-[#EFEBE9] text-[#3E2723] rounded-full px-5 py-2 text-sm font-secondary font-medium transition-all hover:bg-[#6D4C41]/20"
+    },
+    "location_cards": {
+      "style": "relative w-full h-48 sm:h-64 rounded-2xl overflow-hidden shadow-sm group cursor-pointer",
+      "overlay": "absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300",
+      "text_wrapper": "absolute bottom-0 left-0 p-6 w-full flex flex-col justify-end",
+      "title": "text-3xl font-primary text-white tracking-tight drop-shadow-md"
+    },
+    "product_list_item": {
+      "style": "flex flex-row items-center gap-4 py-4 border-b border-[#E5E5E5] last:border-0 cursor-pointer group",
+      "image": "w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shrink-0 shadow-sm group-hover:scale-[1.02] transition-transform",
+      "content": "flex-1 min-w-0",
+      "title": "text-lg font-primary font-bold text-[#1A1A1A] truncate",
+      "description": "text-sm font-secondary text-[#5C5C5C] line-clamp-2 mt-1",
+      "price_row": "flex items-center justify-between mt-2",
+      "price": "text-base font-secondary font-bold text-[#1A1A1A]",
+      "views": "text-xs font-secondary text-[#5C5C5C] flex items-center gap-1"
+    },
+    "product_detail_hero": {
+      "image": "w-full h-[50vh] sm:h-[60vh] object-cover shadow-sm",
+      "content_container": "px-4 py-6 sm:px-8 bg-[#FDFBF7] relative -mt-6 rounded-t-3xl z-10",
+      "title": "text-3xl sm:text-4xl font-primary font-medium text-[#1A1A1A] mb-2 leading-tight",
+      "price_tag": "inline-block px-4 py-1.5 rounded-full text-lg font-secondary font-bold mb-4 shadow-sm"
+    },
+    "admin_dashboard": {
+      "sidebar": "w-64 bg-[#FFFFFF] border-r border-[#E5E5E5] h-screen fixed hidden md:block",
+      "mobile_nav": "md:hidden fixed bottom-0 w-full bg-[#FFFFFF] border-t border-[#E5E5E5] px-4 py-3 flex justify-around z-50",
+      "table": "w-full text-left text-sm font-secondary whitespace-nowrap",
+      "card": "bg-[#FFFFFF] p-6 rounded-2xl border border-[#E5E5E5] shadow-sm"
+    }
+  },
+  "motion_and_interactions": {
+    "page_transition": "framer-motion fade-in from bottom (y: 10, opacity: 0 -> y: 0, opacity: 1, duration: 0.4s)",
+    "list_stagger": "framer-motion stagger children (delay: 0.05s per item) on initial load",
+    "button_hover": "transform scale-[0.98] active:scale-[0.95] transition-transform duration-200",
+    "image_load": "blur-in effect on load (filter: blur(10px) -> blur(0px) over 0.5s)"
+  },
+  "media_assets": {
+    "hero": {
+      "url": "/images/hero-placeholder.jpg",
+      "description": "Minimalist high-contrast food presentation. Use as the main backdrop on the Homepage hero section with an overlay."
+    },
+    "locations": {
+      "terasa": "/images/terasa-placeholder.jpg",
+      "restaurant": "/images/restaurant-placeholder.jpg",
+      "discoteca": "/images/discoteca-placeholder.jpg",
+      "description": "High-end architectural photography to be used for the three location routing cards on the Homepage."
+    },
+    "products": {
+      "burger": "https://images.unsplash.com/photo-1615653633551-25dd80d2765a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHw0fHxnb3VybWV0JTIwYnVyZ2VyJTIwcGFzdGElMjBjb2NrdGFpbCUyMGNvZmZlZXxlbnwwfHx8fDE3NzY3Njg5MTR8MA&ixlib=rb-4.1.0&q=85",
+      "cocktail": "https://images.unsplash.com/photo-1761138786046-89fa3d2cf302?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwxfHxnb3VybWV0JTIwYnVyZ2VyJTIwcGFzdGElMjBjb2NrdGFpbCUyMGNvZmZlZXxlbnwwfHx8fDE3NzY3Njg5MTR8MA&ixlib=rb-4.1.0&q=85",
+      "pasta": "https://images.unsplash.com/photo-1528180016028-1bbe94845a16?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwyfHxnb3VybWV0JTIwYnVyZ2VyJTIwcGFzdGElMjBjb2NrdGFpbCUyMGNvZmZlZXxlbnwwfHx8fDE3NzY3Njg5MTR8MA&ixlib=rb-4.1.0&q=85",
+      "coffee": "https://images.unsplash.com/photo-1640068949034-bfc5ef590844?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MDV8MHwxfHNlYXJjaHwzfHxnb3VybWV0JTIwYnVyZ2VyJTIwcGFzdGElMjBjb2NrdGFpbCUyMGNvZmZlZXxlbnwwfHx8fDE3NzY3Njg5MTR8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Appetizing food imagery for product seed data (Trending items, Location menus)."
+    }
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure minimum 4.5:1 ratio for text. Use text-[#1A1A1A] for all body copy over the #FDFBF7 background.",
+    "data_testid_convention": "All interactive elements MUST use data-testid. Examples: data-testid='terasa-location-card', data-testid='restaurant-location-card', data-testid='discoteca-location-card', data-testid='filter-pill-burger', data-testid='add-to-cart-button', data-testid='product-item-123'",
+    "touch_targets": "All buttons, filter pills, and list items must be easily tappable on mobile devices (min 44px active area)."
+  },
+  "instructions_to_main_agent": [
+    "Build the application using React and Tailwind CSS. Use Shadcn/UI for Admin dashboard components (Tables, Dialogs, Forms) where appropriate.",
+    "For the customer-facing mobile web menu, prioritize custom HTML/Tailwind over heavy Shadcn layout components. The mobile menu must feel like a native app (fluid, no horizontal overflow).",
+    "Implement theme switching (Terasa vs Restaurant) by toggling Tailwind classes dynamically or using CSS custom variables scoped to the location route.",
+    "Data structure involves: produse(nume, descriere, pret, imagine, categorie=terasa|restaurant|discoteca, subcategorie=mancare|bauturi, tip, vizualizari). Ensure 'tip' translates to the sticky pill filters.",
+    "Horizontal scrollable pill filters MUST hide the scrollbar. Add custom CSS: '.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }'.",
+    "Use Phosphor Icons (or Lucide) for UI icons such as view counts, back buttons, and cart.",
+    "Import 'Cormorant Garamond' and 'Manrope' fonts from Google Fonts and configure them in tailwind.config.js as 'font-primary' and 'font-secondary'.",
+    "Ensure the Hero section on the homepage has the locations cards AND the trending products section as per requirements."
+  ]
+}

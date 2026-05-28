@@ -1,0 +1,2 @@
+/* Minimal App-level styles — most styling handled by Tailwind + theme vars */
+.App { min-height: 100vh; }
