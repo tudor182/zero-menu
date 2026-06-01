@@ -3,7 +3,7 @@
   "outputDirectory": "frontend/build",
   "installCommand": "cd frontend && npm install",
   "env": {
-    "REACT_APP_BACKEND_URL": "@backend_url"
+    "REACT_APP_BACKEND_URL": "https://zero-menu.onrender.com"
   },
   "regions": ["cdg1"],
   "git": {
