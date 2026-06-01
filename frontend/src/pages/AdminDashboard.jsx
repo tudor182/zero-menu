@@ -112,7 +112,7 @@ export default function AdminDashboard() {
                   <option value="">{t("all_locations")}</option>
                   <option value="terasa">Terasa</option>
                   <option value="restaurant">Restaurant</option>
-                  <option value="discoteca">Discoteca</option>
+                  <option value="discoteca">Zero Club</option>
                 </select>
                 <select
                   data-testid="filter-subcategorie"
@@ -434,7 +434,7 @@ function ProductModal({ initial, onClose, onSaved }) {
           <div className="grid grid-cols-2 gap-3">
             <Input label={t("price_lei")} type="number" step="0.01" value={form.pret} onChange={(v) => setForm({ ...form, pret: v })} testid="modal-pret" required />
             <Select label={t("location")} value={form.categorie} onChange={(v) => setForm({ ...form, categorie: v })} testid="modal-categorie"
-              options={[{v:"terasa",l:"Terasa"},{v:"restaurant",l:"Restaurant"},{v:"discoteca",l:"Discoteca"}]} />
+              options={[{v:"terasa",l:"Terasa"},{v:"restaurant",l:"Restaurant"},{v:"discoteca",l:"Zero Club"}]} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Select label={t("subcategory")} value={form.subcategorie} onChange={(v) => setForm({ ...form, subcategorie: v })} testid="modal-subcategorie"
@@ -621,12 +621,9 @@ function TipuriManager() {
   const [newName, setNewName] = useState("");
   const [newSub, setNewSub] = useState("mancare");
   const [adding, setAdding] = useState(false);
-  const [copying, setCopying] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [deletingAll, setDeletingAll] = useState(false);
   const [err, setErr] = useState("");
   const [confirmTip, setConfirmTip] = useState(null);
-  const [deletingTip, setDeletingTip] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -680,42 +677,6 @@ function TipuriManager() {
     }
   };
 
-  const handleCopyFromRestaurant = async () => {
-    if (!window.confirm("Copie toate produsele si categoriile de la Restaurant la Discoteca?")) return;
-    setCopying(true);
-    setErr("");
-    try {
-      const result = await api.post("/admin/produse/copy", {
-        from_categorie: "restaurant",
-        to_categorie: "discoteca",
-      });
-      setErr("");
-      await load(); // Reload the categories list
-      alert(`Copiere completă!\n- Categorii copiate: ${result.data.copied_tipuri}\n- Produse copiate: ${result.data.copied_products}`);
-    } catch (e) {
-      const d = e?.response?.data?.detail;
-      setErr(typeof d === "string" ? d : "Eroare la copiere");
-    } finally {
-      setCopying(false);
-    }
-  };
-
-  const handleDeleteAllProducts = async () => {
-    if (!window.confirm(`Stergi TOATE produsele din ${activeCat}? Aceasta actiune nu se poate anula!`)) return;
-    setDeletingAll(true);
-    setErr("");
-    try {
-      const result = await api.delete(`/admin/produse/by-categorie/${activeCat}`);
-      setErr("");
-      alert(`${result.data.deleted} produse sterse din ${activeCat}`);
-    } catch (e) {
-      const d = e?.response?.data?.detail;
-      setErr(typeof d === "string" ? d : "Eroare la stergere");
-    } finally {
-      setDeletingAll(false);
-    }
-  };
-
   const grouped = useMemo(() => {
     const m = { mancare: [], bauturi: [] };
     for (const it of items) {
@@ -739,36 +700,12 @@ function TipuriManager() {
               Restaurant
             </CatPill>
             <CatPill active={activeCat === "discoteca"} onClick={() => setActiveCat("discoteca")} testid="tipuri-cat-discoteca">
-              Discoteca
+              Zero Club
             </CatPill>
           </div>
           <span className="text-sm text-muted">{items.length} {t("tab_tipuri").toLowerCase()}</span>
         </div>
         <div className="flex gap-2">
-          {activeCat === "discoteca" && (
-            <>
-              <button
-                onClick={() => handleCopyFromRestaurant()}
-                disabled={copying}
-                data-testid="copy-from-restaurant-btn"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-amber-600 to-amber-700 text-white font-secondary font-bold text-sm shadow-[0_8px_22px_-8px_rgba(0,0,0,0.4)] active:scale-95 transition disabled:opacity-60"
-                title="Copy all products from Restaurant to Discoteca"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                {copying ? "Copiere..." : "Copy from Restaurant"}
-              </button>
-              <button
-                onClick={() => handleDeleteAllProducts()}
-                disabled={deletingAll}
-                data-testid="delete-all-products-btn"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-br from-red-600 to-red-700 text-white font-secondary font-bold text-sm shadow-[0_8px_22px_-8px_rgba(0,0,0,0.4)] active:scale-95 transition disabled:opacity-60"
-                title="Delete all products from this category"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                {deletingAll ? "Stergere..." : "Delete All"}
-              </button>
-            </>
-          )}
           <button
             onClick={() => setShowAdd(true)}
             data-testid="tipuri-add-btn"
@@ -1080,7 +1017,7 @@ function SettingsManager({ settings, setSettings, loadingSettings, setLoadingSet
   const locations = [
     { id: "terasa", name: "Terasa", color: "cyan" },
     { id: "restaurant", name: "Restaurant", color: "amber" },
-    { id: "discoteca", name: "Discoteca", color: "purple" },
+    { id: "discoteca", name: "Zero Club", color: "purple" },
   ];
 
   const subcategories = [

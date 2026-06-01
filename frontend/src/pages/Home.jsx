@@ -79,7 +79,7 @@ export default function Home() {
             <LocationCard to="/restaurant" name="Restaurant" tagline={t("restaurant_tagline")} img={RESTAURANT_IMG} tint="from-amber-900/60" accent="bg-amber-300" testid="restaurant-location-card" index={2} />
           )}
           {settings && settings.active_locations.includes("discoteca") && (
-            <LocationCard to="/discoteca" name="Discoteca" tagline={t("discoteca_tagline")} img={DISCOTECA_IMG} tint="from-purple-900/60" accent="bg-purple-400" testid="discoteca-location-card" index={3} />
+            <LocationCard to="/discoteca" name="Zero Club" tagline={t("discoteca_tagline")} img={DISCOTECA_IMG} tint="from-purple-900/60" accent="bg-purple-400" testid="discoteca-location-card" index={3} />
           )}
         </div>
       </section>
