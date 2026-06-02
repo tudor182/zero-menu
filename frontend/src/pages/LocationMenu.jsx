@@ -222,7 +222,7 @@ export default function LocationMenu() {
       </div>
 
       <div id="menu" />
-      <FilterStrip tipuri={tipuri} activeTip={activeTip} onSelect={onSelectTip} categorie={categorie} subcategorie={subcategorie} settings={settings} setSettings={setSettings} />
+      <FilterStrip tipuri={tipuri} activeTip={activeTip} onSelect={onSelectTip} />
 
       <main className="container max-w-4xl mx-auto px-4 pt-5 pb-16">
         {loading ? (
