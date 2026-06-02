@@ -1160,6 +1160,154 @@ function SettingsManager({ settings, setSettings, loadingSettings, setLoadingSet
           })}
         </div>
       </div>
+
+      {/* Products Management */}
+      <div className="bg-white rounded-2xl border border-line p-6 shadow-sm">
+        <h2 className="font-primary text-2xl font-medium mb-5">Manage Products</h2>
+        <p className="text-sm text-muted mb-6">Toggle products on/off to control which products are visible to customers</p>
+        <ProductsManager settings={settings} setSettings={setSettings} loadingSettings={loadingSettings} setLoadingSettings={setLoadingSettings} />
+      </div>
+    </div>
+  );
+}
+
+function ProductsManager({ settings, setSettings, loadingSettings, setLoadingSettings }) {
+  const { t, lang } = useI18n();
+  const [err, setErr] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [allProduse, setAllProduse] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterCat, setFilterCat] = useState("");
+
+  useEffect(() => {
+    // Load all products
+    api.get("/admin/produse").then((r) => {
+      setAllProduse(r.data.items || []);
+      setLoading(false);
+    }).catch(() => {
+      setAllProduse([]);
+      setLoading(false);
+    });
+  }, []);
+
+  const toggleProduct = async (productId) => {
+    if (!settings) return;
+    setErr("");
+    setSuccessMsg("");
+    setLoadingSettings(true);
+
+    try {
+      const updatedProduse = settings.active_produse?.includes(productId)
+        ? (settings.active_produse || []).filter((id) => id !== productId)
+        : [...(settings.active_produse || []), productId];
+
+      const result = await updateSettings({
+        active_produse: updatedProduse,
+      });
+
+      setSettings(result);
+      const prod = allProduse.find(p => p.id === productId);
+      const prodName = localizedName(prod, lang);
+      setSuccessMsg(`${prodName} ${updatedProduse.includes(productId) ? "activated" : "deactivated"}`);
+    } catch (e) {
+      const d = e?.response?.data?.detail;
+      setErr(typeof d === "string" ? d : "Error updating settings");
+    } finally {
+      setLoadingSettings(false);
+    }
+  };
+
+  const filteredProduse = filterCat 
+    ? allProduse.filter(p => p.categorie === filterCat)
+    : allProduse;
+
+  const locations = [
+    { id: "terasa", name: "Terasa" },
+    { id: "restaurant", name: "Restaurant" },
+    { id: "discoteca", name: "Zero Club" },
+  ];
+
+  if (loading) {
+    return <div className="py-10 text-center text-muted">Loading products...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {err && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-red-800 text-sm">
+          {err}
+        </div>
+      )}
+      {successMsg && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-green-800 text-sm">
+          {successMsg}
+        </div>
+      )}
+
+      {/* Filter by location */}
+      <div className="flex gap-2 flex-wrap">
+        <button
+          onClick={() => setFilterCat("")}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+            filterCat === ""
+              ? "bg-ink text-white"
+              : "bg-bg border border-line text-muted hover:text-ink"
+          }`}
+        >
+          All
+        </button>
+        {locations.map((loc) => (
+          <button
+            key={loc.id}
+            onClick={() => setFilterCat(loc.id)}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+              filterCat === loc.id
+                ? "bg-ink text-white"
+                : "bg-bg border border-line text-muted hover:text-ink"
+            }`}
+          >
+            {loc.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Products grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+        {filteredProduse.length > 0 ? (
+          filteredProduse.map((prod) => {
+            const isActive = (settings?.active_produse || []).includes(prod.id);
+            return (
+              <div
+                key={prod.id}
+                className={`flex items-start gap-3 p-3 rounded-lg border-2 transition ${
+                  isActive
+                    ? "bg-green-50 border-green-300"
+                    : "bg-gray-50 border-gray-300"
+                }`}
+              >
+                <button
+                  onClick={() => toggleProduct(prod.id)}
+                  disabled={loadingSettings}
+                  className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition ${
+                    isActive
+                      ? "bg-green-600 border-green-600"
+                      : "bg-white border-gray-400 hover:border-green-600"
+                  }`}
+                >
+                  {isActive && <span className="text-white text-xs font-bold">✓</span>}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-ink truncate">{localizedName(prod, lang)}</p>
+                  <p className="text-xs text-muted">{prod.categorie} • {prod.subcategorie} • {prod.tip}</p>
+                  <p className="text-xs font-medium text-ink mt-1">{prod.pret} lei</p>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-muted py-4">No products found</p>
+        )}
+      </div>
     </div>
   );
 }
