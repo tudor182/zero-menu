@@ -44,7 +44,7 @@ export default function Home() {
         </div>
 
         <div className="relative h-full container max-w-4xl mx-auto px-4 flex flex-col justify-end pb-12 sm:pb-16">
-          <h1 className="font-primary text-[100px] leading-[0.92] sm:text-[96px] sm:leading-[0.92] font-medium text-white tracking-tight animate-fade-up">
+          <h1 className="font-primary text-[70px] leading-[0.92] sm:text-[96px] sm:leading-[0.92] font-medium text-white tracking-tight animate-fade-up">
             {t("hero_title_l1")}<br/>{t("hero_title_l2")}<br/>
             <span className="italic font-light">{t("hero_title_l3")}</span>
           </h1>
