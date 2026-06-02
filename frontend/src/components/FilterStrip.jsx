@@ -1,10 +1,28 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import { useI18n } from "../lib/i18n";
 
-export default function FilterStrip({ tipuri, activeTip, onSelect }) {
+export default function FilterStrip({ tipuri, activeTip, onSelect, categorie, subcategorie, settings }) {
   const { t, tTip } = useI18n();
   const scrollRef = useRef(null);
   const activeRef = useRef(null);
+
+  // Sort tipuri based on custom order from settings
+  const orderedTipuri = useMemo(() => {
+    if (!tipuri || !tipuri.length) return [];
+    
+    // Get custom order from settings if available
+    const customOrder = settings?.tipuri_order?.[categorie]?.[subcategorie] || [];
+    
+    // Merge: custom order first, then any remaining tipuri not in custom order
+    const finalOrder = [...customOrder];
+    for (const tip of tipuri) {
+      if (!finalOrder.includes(tip)) {
+        finalOrder.push(tip);
+      }
+    }
+    
+    return finalOrder;
+  }, [tipuri, settings, categorie, subcategorie]);
 
   useEffect(() => {
     if (activeRef.current && scrollRef.current) {
@@ -38,7 +56,7 @@ export default function FilterStrip({ tipuri, activeTip, onSelect }) {
         >
           {t("all")}
         </button>
-        {tipuri.map((tip) => {
+        {orderedTipuri.map((tip) => {
           const active = activeTip === tip;
           return (
             <button

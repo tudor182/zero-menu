@@ -80,7 +80,7 @@ export default function LocationMenu() {
     return [...VALID_SUBCAT].sort((a, b) => (order[a] || 1) - (order[b] || 2));
   }, [settings, categorie]);
 
-  // Group products by `tip` — preserve tip order from settings, then canonical tipuri list.
+  // Group products by `tip` — preserve tip order from settings
   const groupedItems = useMemo(() => {
     if (!data.items.length) return [];
     
@@ -222,7 +222,7 @@ export default function LocationMenu() {
       </div>
 
       <div id="menu" />
-      <FilterStrip tipuri={tipuri} activeTip={activeTip} onSelect={onSelectTip} />
+      <FilterStrip tipuri={tipuri} activeTip={activeTip} onSelect={onSelectTip} categorie={categorie} subcategorie={subcategorie} settings={settings} />
 
       <main className="container max-w-4xl mx-auto px-4 pt-5 pb-16">
         {loading ? (
