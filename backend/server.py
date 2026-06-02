@@ -154,7 +154,7 @@ class TranslateRequest(BaseModel):
 
 class SettingsUpdate(BaseModel):
     active_locations: Optional[List[Categorie]] = None
-    active_produse: Optional[List[str]] = None  # List of product IDs that are active
+    inactive_produse: Optional[List[str]] = None  # List of product IDs that are inactive (OFF)
     subcategory_order: Optional[dict] = None  # e.g., {"terasa": {"mancare": 1, "bauturi": 2}, ...}
     tipuri_order: Optional[dict] = None  # e.g., {"terasa": {"mancare": ["Pizza", "Paste"], "bauturi": [...]}, ...}
 
@@ -246,14 +246,14 @@ async def get_tipuri(subcategorie: Subcategorie, categorie: Optional[Categorie] 
 
 @api.get("/home")
 async def home():
-    """Return trending products (top 6 by vizualizari from active locations and active products)."""
+    """Return trending products (top 6 by vizualizari from active locations, excluding inactive products)."""
     settings = await db.settings.find_one({"_id": "global"})
     active_locations = settings.get("active_locations", ["terasa", "restaurant", "discoteca"]) if settings else ["terasa", "restaurant", "discoteca"]
-    active_produse = settings.get("active_produse", []) if settings else []
+    inactive_produse = settings.get("inactive_produse", []) if settings else []
     
     query = {"categorie": {"$in": active_locations}}
-    if active_produse:
-        query["id"] = {"$in": active_produse}
+    if inactive_produse:
+        query["id"] = {"$nin": inactive_produse}
     
     cursor = db.produse.find(query, {"_id": 0}).sort("vizualizari", -1).limit(6)
     trending = await cursor.to_list(length=6)
@@ -268,9 +268,9 @@ async def list_produse(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
 ):
-    # Get active products from settings
+    # Get inactive products from settings
     settings = await db.settings.find_one({"_id": "global"})
-    active_produse = settings.get("active_produse", []) if settings else []
+    inactive_produse = settings.get("inactive_produse", []) if settings else []
     
     q: dict = {}
     if categorie:
@@ -280,9 +280,9 @@ async def list_produse(
     if tip:
         q["tip"] = tip
     
-    # Filter by active products
-    if active_produse:
-        q["id"] = {"$in": active_produse}
+    # Exclude inactive products
+    if inactive_produse:
+        q["id"] = {"$nin": inactive_produse}
     
     total = await db.produse.count_documents(q)
     skip = (page - 1) * limit
@@ -710,7 +710,7 @@ async def get_settings_public():
         # Return defaults
         return {
             "active_locations": ["terasa", "restaurant", "discoteca"],
-            "active_produse": [],
+            "inactive_produse": [],
             "subcategory_order": {},
             "tipuri_order": {}
         }
@@ -721,13 +721,13 @@ async def get_settings_public():
 # ---------- Admin: Settings ----------
 @api.get("/admin/settings")
 async def admin_get_settings(_=Depends(get_current_admin)):
-    """Get global settings (active locations, active products, category order)."""
+    """Get global settings (active locations, inactive products, category order)."""
     settings = await db.settings.find_one({"_id": "global"})
     if not settings:
         # Return defaults
         return {
             "active_locations": ["terasa", "restaurant", "discoteca"],
-            "active_produse": [],
+            "inactive_produse": [],
             "category_order": {"mancare": 1, "bauturi": 2},
         }
     settings.pop("_id", None)
@@ -736,12 +736,12 @@ async def admin_get_settings(_=Depends(get_current_admin)):
 
 @api.put("/admin/settings")
 async def admin_update_settings(body: SettingsUpdate, _=Depends(get_current_admin)):
-    """Update global settings (active locations, category order)."""
+    """Update global settings (active locations, inactive products, category order)."""
     update_data = {}
     if body.active_locations is not None:
         update_data["active_locations"] = body.active_locations
-    if body.active_produse is not None:
-        update_data["active_produse"] = body.active_produse
+    if body.inactive_produse is not None:
+        update_data["inactive_produse"] = body.inactive_produse
     if body.subcategory_order is not None:
         update_data["subcategory_order"] = body.subcategory_order
     if body.tipuri_order is not None:
@@ -875,7 +875,7 @@ async def on_startup():
         await db.settings.insert_one({
             "_id": "global",
             "active_locations": ["terasa", "restaurant", "discoteca"],
-            "active_produse": [],
+            "inactive_produse": [],
             "subcategory_order": {
                 "terasa": {"mancare": 1, "bauturi": 2},
                 "restaurant": {"mancare": 1, "bauturi": 2},

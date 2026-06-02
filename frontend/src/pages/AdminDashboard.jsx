@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState("produse");
   const [produse, setProduse] = useState([]);
   const [analytics, setAnalytics] = useState(null);
-  const [filter, setFilter] = useState({ categorie: "", subcategorie: "" });
+  const [filter, setFilter] = useState({ categorie: "", subcategorie: "", search: "" });
   const [editProd, setEditProd] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [settings, setSettings] = useState(null);
@@ -101,37 +101,46 @@ export default function AdminDashboard() {
       <main className="container max-w-6xl mx-auto px-4 py-6">
         {tab === "produse" && (
           <>
-            <div className="flex flex-wrap gap-3 items-center justify-between mb-5">
-              <div className="flex gap-2 flex-wrap">
-                <select
-                  data-testid="filter-categorie"
-                  value={filter.categorie}
-                  onChange={(e) => setFilter((f) => ({ ...f, categorie: e.target.value }))}
-                  className="px-4 py-2 rounded-full border border-line bg-white text-sm"
+            <div className="flex flex-col gap-4 mb-5">
+              <div className="flex flex-wrap gap-3 items-center justify-between">
+                <div className="flex gap-2 flex-wrap">
+                  <select
+                    data-testid="filter-categorie"
+                    value={filter.categorie}
+                    onChange={(e) => setFilter((f) => ({ ...f, categorie: e.target.value }))}
+                    className="px-4 py-2 rounded-full border border-line bg-white text-sm"
+                  >
+                    <option value="">{t("all_locations")}</option>
+                    <option value="terasa">Terasa</option>
+                    <option value="restaurant">Restaurant</option>
+                    <option value="discoteca">Zero Club</option>
+                  </select>
+                  <select
+                    data-testid="filter-subcategorie"
+                    value={filter.subcategorie}
+                    onChange={(e) => setFilter((f) => ({ ...f, subcategorie: e.target.value }))}
+                    className="px-4 py-2 rounded-full border border-line bg-white text-sm"
+                  >
+                    <option value="">{t("mancare_bauturi")}</option>
+                    <option value="mancare">{t("mancare")}</option>
+                    <option value="bauturi">{t("bauturi")}</option>
+                  </select>
+                </div>
+                <button
+                  data-testid="admin-create-btn"
+                  onClick={() => setShowCreate(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ink text-white text-sm font-semibold active:scale-95"
                 >
-                  <option value="">{t("all_locations")}</option>
-                  <option value="terasa">Terasa</option>
-                  <option value="restaurant">Restaurant</option>
-                  <option value="discoteca">Zero Club</option>
-                </select>
-                <select
-                  data-testid="filter-subcategorie"
-                  value={filter.subcategorie}
-                  onChange={(e) => setFilter((f) => ({ ...f, subcategorie: e.target.value }))}
-                  className="px-4 py-2 rounded-full border border-line bg-white text-sm"
-                >
-                  <option value="">{t("mancare_bauturi")}</option>
-                  <option value="mancare">{t("mancare")}</option>
-                  <option value="bauturi">{t("bauturi")}</option>
-                </select>
+                  <Plus size={16} /> {t("new_product")}
+                </button>
               </div>
-              <button
-                data-testid="admin-create-btn"
-                onClick={() => setShowCreate(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-ink text-white text-sm font-semibold active:scale-95"
-              >
-                <Plus size={16} /> {t("new_product")}
-              </button>
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={filter.search}
+                onChange={(e) => setFilter((f) => ({ ...f, search: e.target.value }))}
+                className="px-4 py-2 rounded-full border border-line bg-white text-sm w-full sm:w-64"
+              />
             </div>
 
             <div className="bg-white rounded-2xl border border-line overflow-hidden shadow-sm overflow-x-auto">
@@ -148,7 +157,14 @@ export default function AdminDashboard() {
                 <tbody data-testid="admin-product-table">
                   {produse.length === 0 ? (
                     <tr><td colSpan={5} className="py-10 text-center text-muted">{t("no_products")}</td></tr>
-                  ) : produse.map((p) => (
+                  ) : produse.filter((p) => {
+                    const searchText = filter.search.toLowerCase();
+                    if (!searchText) return true;
+                    const name = (localizedName(p, lang) || "").toLowerCase();
+                    const desc = (localizedDescription(p, lang) || "").toLowerCase();
+                    const tip = (tTip(p.tip) || "").toLowerCase();
+                    return name.includes(searchText) || desc.includes(searchText) || tip.includes(searchText);
+                  }).map((p) => (
                     <tr key={p.id} className="border-t border-line" data-testid={`admin-row-${p.id}`}>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
@@ -1178,6 +1194,7 @@ function ProductsManager({ settings, setSettings, loadingSettings, setLoadingSet
   const [allProduse, setAllProduse] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterCat, setFilterCat] = useState("");
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     // Load all products
@@ -1197,18 +1214,21 @@ function ProductsManager({ settings, setSettings, loadingSettings, setLoadingSet
     setLoadingSettings(true);
 
     try {
-      const updatedProduse = settings.active_produse?.includes(productId)
-        ? (settings.active_produse || []).filter((id) => id !== productId)
-        : [...(settings.active_produse || []), productId];
+      const inactiveList = settings.inactive_produse || [];
+      const isCurrentlyInactive = inactiveList.includes(productId);
+      
+      const updatedProduse = isCurrentlyInactive
+        ? inactiveList.filter((id) => id !== productId)  // Remove from inactive = turn ON
+        : [...inactiveList, productId];  // Add to inactive = turn OFF
 
       const result = await updateSettings({
-        active_produse: updatedProduse,
+        inactive_produse: updatedProduse,
       });
 
       setSettings(result);
       const prod = allProduse.find(p => p.id === productId);
       const prodName = localizedName(prod, lang);
-      setSuccessMsg(`${prodName} ${updatedProduse.includes(productId) ? "activated" : "deactivated"}`);
+      setSuccessMsg(`${prodName} ${isCurrentlyInactive ? "turned ON" : "turned OFF"}`);
     } catch (e) {
       const d = e?.response?.data?.detail;
       setErr(typeof d === "string" ? d : "Error updating settings");
@@ -1217,9 +1237,23 @@ function ProductsManager({ settings, setSettings, loadingSettings, setLoadingSet
     }
   };
 
-  const filteredProduse = filterCat 
-    ? allProduse.filter(p => p.categorie === filterCat)
-    : allProduse;
+  const filteredProduse = allProduse.filter(p => {
+    // Filter by category
+    if (filterCat && p.categorie !== filterCat) return false;
+    
+    // Filter by search text
+    if (searchText) {
+      const search = searchText.toLowerCase();
+      const name = (localizedName(p, lang) || "").toLowerCase();
+      const desc = (localizedDescription(p, lang) || "").toLowerCase();
+      const tip = (p.tip || "").toLowerCase();
+      if (!name.includes(search) && !desc.includes(search) && !tip.includes(search)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
 
   const locations = [
     { id: "terasa", name: "Terasa" },
@@ -1245,37 +1279,49 @@ function ProductsManager({ settings, setSettings, loadingSettings, setLoadingSet
       )}
 
       {/* Filter by location */}
-      <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={() => setFilterCat("")}
-          className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-            filterCat === ""
-              ? "bg-ink text-white"
-              : "bg-bg border border-line text-muted hover:text-ink"
-          }`}
-        >
-          All
-        </button>
-        {locations.map((loc) => (
+      <div className="flex flex-col gap-3">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="px-4 py-2 rounded-full border border-line bg-white text-sm w-full sm:w-64"
+        />
+        <div className="flex gap-2 flex-wrap">
           <button
-            key={loc.id}
-            onClick={() => setFilterCat(loc.id)}
+            onClick={() => setFilterCat("")}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
-              filterCat === loc.id
+              filterCat === ""
                 ? "bg-ink text-white"
                 : "bg-bg border border-line text-muted hover:text-ink"
             }`}
           >
-            {loc.name}
+            All
           </button>
-        ))}
+          {locations.map((loc) => (
+            <button
+              key={loc.id}
+              onClick={() => setFilterCat(loc.id)}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                filterCat === loc.id
+                  ? "bg-ink text-white"
+                  : "bg-bg border border-line text-muted hover:text-ink"
+              }`}
+            >
+              {loc.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Products grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
         {filteredProduse.length > 0 ? (
           filteredProduse.map((prod) => {
-            const isActive = (settings?.active_produse || []).includes(prod.id);
+            const inactiveList = settings?.inactive_produse || [];
+            const isInactive = inactiveList.includes(prod.id);
+            const isActive = !isInactive;  // Inverse logic
+            
             return (
               <div
                 key={prod.id}
