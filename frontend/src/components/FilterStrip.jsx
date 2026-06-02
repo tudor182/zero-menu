@@ -1,10 +1,28 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useI18n } from "../lib/i18n";
+import api from "../lib/api";
 
-export default function FilterStrip({ tipuri, activeTip, onSelect }) {
+export default function FilterStrip({ tipuri, activeTip, onSelect, categorie, subcategorie, settings, setSettings }) {
   const { t, tTip } = useI18n();
   const scrollRef = useRef(null);
   const activeRef = useRef(null);
+  const [draggedTip, setDraggedTip] = useState(null);
+  const [orderedTipuri, setOrderedTipuri] = useState(tipuri);
+
+  useEffect(() => {
+    // Load custom order from settings if available
+    if (settings?.tipuri_order?.[categorie]?.[subcategorie]) {
+      const customOrder = settings.tipuri_order[categorie][subcategorie];
+      const ordered = customOrder.filter(t => tipuri.includes(t));
+      // Add any tipuri not in custom order
+      for (const t of tipuri) {
+        if (!ordered.includes(t)) ordered.push(t);
+      }
+      setOrderedTipuri(ordered);
+    } else {
+      setOrderedTipuri(tipuri);
+    }
+  }, [tipuri, settings, categorie, subcategorie]);
 
   useEffect(() => {
     if (activeRef.current && scrollRef.current) {
@@ -19,6 +37,59 @@ export default function FilterStrip({ tipuri, activeTip, onSelect }) {
       }
     }
   }, [activeTip]);
+
+  const handleDragStart = (e, tip) => {
+    setDraggedTip(tip);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = async (e, targetTip) => {
+    e.preventDefault();
+    if (!draggedTip || draggedTip === targetTip) {
+      setDraggedTip(null);
+      return;
+    }
+
+    const dragIndex = orderedTipuri.indexOf(draggedTip);
+    const targetIndex = orderedTipuri.indexOf(targetTip);
+    
+    if (dragIndex === -1 || targetIndex === -1) {
+      setDraggedTip(null);
+      return;
+    }
+
+    const newOrder = [...orderedTipuri];
+    [newOrder[dragIndex], newOrder[targetIndex]] = [newOrder[targetIndex], newOrder[dragIndex]];
+    setOrderedTipuri(newOrder);
+
+    // Save to backend
+    if (categorie && subcategorie && settings && setSettings) {
+      try {
+        const updatedTipuriOrder = {
+          ...settings.tipuri_order,
+          [categorie]: {
+            ...settings.tipuri_order?.[categorie],
+            [subcategorie]: newOrder,
+          },
+        };
+
+        const result = await api.put("/admin/settings", {
+          tipuri_order: updatedTipuriOrder,
+        });
+
+        setSettings(result.data);
+      } catch (e) {
+        console.error("Failed to save tipuri order:", e);
+      }
+    }
+
+    setDraggedTip(null);
+  };
 
   return (
     <div
@@ -38,7 +109,7 @@ export default function FilterStrip({ tipuri, activeTip, onSelect }) {
         >
           {t("all")}
         </button>
-        {tipuri.map((tip) => {
+        {orderedTipuri.map((tip) => {
           const active = activeTip === tip;
           return (
             <button
@@ -46,11 +117,15 @@ export default function FilterStrip({ tipuri, activeTip, onSelect }) {
               ref={active ? activeRef : null}
               data-testid={`filter-pill-${tip.replace(/\s+/g, "-").toLowerCase()}`}
               onClick={() => onSelect(tip)}
-              className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-secondary font-semibold transition-all duration-300 ring-1 ${
+              draggable
+              onDragStart={(e) => handleDragStart(e, tip)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, tip)}
+              className={`shrink-0 whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-secondary font-semibold transition-all duration-300 ring-1 cursor-move ${
                 active
                   ? "bg-gradient-to-br from-[var(--t-primary)] to-[var(--t-accent)] text-white shadow-[0_8px_18px_-8px_rgba(0,0,0,0.35)] ring-white/20 scale-[1.03]"
                   : "bg-theme-soft text-theme-soft ring-transparent hover:bg-white hover:ring-line"
-              }`}
+              } ${draggedTip === tip ? "opacity-50" : ""}`}
             >
               {tTip(tip)}
             </button>

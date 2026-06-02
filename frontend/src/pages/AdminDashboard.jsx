@@ -909,61 +909,6 @@ function SettingsManager({ settings, setSettings, loadingSettings, setLoadingSet
     }
   };
 
-  const reorderSubcategories = async (location, newOrder) => {
-    if (!settings) return;
-    setErr("");
-    setSuccessMsg("");
-    setLoadingSettings(true);
-
-    try {
-      const updatedSubcategoryOrder = {
-        ...settings.subcategory_order,
-        [location]: newOrder,
-      };
-
-      const result = await updateSettings({
-        subcategory_order: updatedSubcategoryOrder,
-      });
-
-      setSettings(result);
-      setSuccessMsg(`Subcategory order updated for ${location}`);
-    } catch (e) {
-      const d = e?.response?.data?.detail;
-      setErr(typeof d === "string" ? d : "Error updating settings");
-    } finally {
-      setLoadingSettings(false);
-    }
-  };
-
-  const handleDragStart = (e, item) => {
-    setDraggedItem(item);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-
-  const handleDrop = (e, location, targetItem) => {
-    e.preventDefault();
-    if (!draggedItem || draggedItem.location !== location || draggedItem.id === targetItem.id) {
-      setDraggedItem(null);
-      return;
-    }
-
-    const currentOrder = settings.subcategory_order[location] || { mancare: 1, bauturi: 2 };
-    const newOrder = { ...currentOrder };
-    
-    // Swap the order values
-    const temp = newOrder[draggedItem.id];
-    newOrder[draggedItem.id] = newOrder[targetItem.id];
-    newOrder[targetItem.id] = temp;
-
-    reorderSubcategories(location, newOrder);
-    setDraggedItem(null);
-  };
-
   const reorderTipuri = async (location, subcategory, newOrder) => {
     if (!settings) return;
     setErr("");
@@ -1076,48 +1021,6 @@ function SettingsManager({ settings, setSettings, loadingSettings, setLoadingSet
                 >
                   {isActive ? "✓ Active" : "Inactive"}
                 </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Subcategory Order per Location */}
-      <div className="bg-white rounded-2xl border border-line p-6 shadow-sm">
-        <h2 className="font-primary text-2xl font-medium mb-5">Subcategory Order</h2>
-        <p className="text-sm text-muted mb-6">Drag to reorder subcategories for each location</p>
-        
-        <div className="space-y-6">
-          {locations.map((loc) => {
-            const isActive = settings.active_locations.includes(loc.id);
-            if (!isActive) return null;
-
-            const order = settings.subcategory_order?.[loc.id] || { mancare: 1, bauturi: 2 };
-            const sortedSubs = [...subcategories].sort((a, b) => (order[a.id] || 1) - (order[b.id] || 2));
-
-            return (
-              <div key={loc.id} className="border border-line rounded-xl p-4 bg-bg">
-                <h3 className="font-semibold text-ink mb-3">{loc.name}</h3>
-                <div className="space-y-2">
-                  {sortedSubs.map((sub) => (
-                    <div
-                      key={`${loc.id}-${sub.id}`}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, { id: sub.id, location: loc.id })}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, loc.id, { id: sub.id })}
-                      className={`flex items-center gap-3 p-3 bg-white rounded-lg border-2 cursor-move transition ${
-                        draggedItem?.id === sub.id && draggedItem?.location === loc.id
-                          ? "border-ink opacity-50"
-                          : "border-line hover:border-ink/30"
-                      }`}
-                    >
-                      <span className="text-xs font-bold text-ink bg-bg px-2 py-1 rounded">#{order[sub.id] || 1}</span>
-                      <span className="flex-1 font-medium text-ink">{sub.name}</span>
-                      <span className="text-xs text-muted">≡ drag</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             );
           })}
